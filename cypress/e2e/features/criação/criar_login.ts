@@ -1,53 +1,16 @@
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 
-Given(
-    'que o usuário {string} está cadastrado com o e-mail {string} e a senha {string}',
-    (name: string, email: string, password: string) => {
-        cy.registerUser({ name, email, password });
-    },
-);
-
-Given('está na página de login', () => {
-    cy.visit('/login');
-    cy.url().should('include', '/login');
-    cy.contains('Entrar').should('be.visible');
+// Step para acessar a tela de login
+Given('que o usuário {string} está na tela de login', () => {
+    cy.visit('/login');  // Navega até a página de login
+    cy.url().should('include', '/login');  // Verifica se está na página de login
+    cy.contains('Entrar').should('be.visible');  // Verifica se o botão de login está visível
 });
 
-When('informa o e-mail {string} e a senha {string}', (email: string, password: string) => {
-    cy.get('input[name="email"]').clear().type(email);
-    cy.get('input[name="password"]').clear().type(password);
-});
-
-When('envia o formulário de login', () => {
-    cy.get('form[data-testid="login-form"]').submit();
-});
-
-Then('deve ser redirecionado para a página de tarefas', () => {
-    cy.url().should('include', '/tasks');
-});
-
-Then('deve visualizar a lista de tarefas', () => {
-    cy.contains('Minhas Tarefas').should('be.visible');
-});
-
-Then('deve visualizar a mensagem de erro {string}', (message: string) => {
-    cy.get('.error-message').should('contain.text', message).and('be.visible');
-});
-
-Then('deve permanecer na página de login', () => {
-    cy.url().should('include', '/login');
-});
-
-
-
-
-
-
-
-// Step para acessar a página de registro
-Given('que o usuário {string} está na página de registro', (name: string) => {
-    cy.visit('/register');  // Página de registro
-    cy.url().should('include', '/register');  // Verifica se está na página de registro
+// Step para clicar em "Cadastrar-se"
+When('clica em Cadastrar-se', () => {
+    cy.contains('Cadastrar-se').click();  // Clica no link para se cadastrar
+    cy.url().should('include', '/register');  // Verifica se foi redirecionado para a página de registro
     cy.contains('Criar Conta').should('be.visible');  // Verifica se o botão de registro está visível
 });
 
@@ -71,12 +34,12 @@ When('envia o formulário de registro', () => {
     cy.get('form[data-testid="register-form"]').submit();  // Envia o formulário
 });
 
-// Step para verificar redirecionamento para a página de login
+// Step para verificar redirecionamento para a página de login após registro
 Then('deve ser redirecionado para a página de login', () => {
     cy.url().should('include', '/login');  // Verifica se foi redirecionado para a página de login
 });
 
-// Step para verificar mensagem de sucesso
+// Step para verificar mensagem de sucesso no registro
 Then('deve visualizar a mensagem {string}', (message: string) => {
     cy.contains(message).should('be.visible');  // Verifica se a mensagem de sucesso está visível
 });
@@ -86,7 +49,7 @@ Then('deve visualizar a mensagem de erro {string}', (message: string) => {
     cy.get('.error-message').should('contain.text', message).and('be.visible');  // Verifica a mensagem de erro
 });
 
-// Step para verificar se permanece na página de registro
+// Step para verificar se permanece na página de registro após erro
 Then('deve permanecer na página de registro', () => {
     cy.url().should('include', '/register');  // Verifica se permanece na página de registro
 });

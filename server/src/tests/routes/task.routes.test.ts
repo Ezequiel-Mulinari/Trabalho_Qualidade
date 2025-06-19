@@ -59,4 +59,38 @@ describe('TaskController', () => {
             );
         });
     });
+
+    // ### Teste integração Zequi ####
+
+
+    describe('GET /api/tasks', () => {
+        beforeAll(async () => {
+            // Limpar todas as tarefas antes de rodar o teste
+            await prisma.task.deleteMany();
+        });
+    
+        it('deve retornar status 200 mesmo sem tarefas criadas', async () => {
+            // Act (agir) - Realiza a requisição GET para listar as tarefas
+            const response = await request(app).get('/api/tasks').send();
+    
+            // Assert (verificar) - Verifica se o status da resposta é 200
+            expect(response.statusCode).toBe(StatusCodes.OK);
+            expect(response.body).toEqual([]);  // Espera-se que o corpo da resposta seja uma lista vazia
+        });
+    });
+
+    describe('GET /api/tasks', () => {
+        it('deve retornar um array vazio quando não houver tarefas', async () => {
+            // Act (agir) - Realiza a requisição GET para listar as tarefas
+            const response = await request(app).get('/api/tasks').send();
+    
+            // Assert (verificar) - Verifica se a resposta é um array vazio
+            expect(response.statusCode).toBe(StatusCodes.OK);
+            expect(Array.isArray(response.body)).toBe(true);  // Verifica se a resposta é um array
+            expect(response.body).toEqual([]);  // Espera-se que o corpo da resposta seja um array vazio
+        });
+    });
+    
+    
+    
 });

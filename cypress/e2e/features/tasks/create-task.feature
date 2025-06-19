@@ -14,3 +14,12 @@ Feature: Criação de tarefas
     And seleciona a prioridade "alta"
     And envia o formulário de criação
     Then a tarefa "Entregar trabalho final de QTSW" deve aparecer na lista de tarefas
+
+ 
+ Scenario: Edição bem-sucedida de uma tarefa existente
+    Given a tarefa "Entregar trabalho final de QTSW" foi criada
+    When edita o título da tarefa para "Entregar trabalho final de QTSW - Atualizado"
+    And envia o formulário de edição
+    Then a tarefa "Entregar trabalho final de QTSW - Atualizado" deve aparecer na lista de tarefas
+ 
+ 

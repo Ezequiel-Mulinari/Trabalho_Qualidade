@@ -45,3 +45,19 @@ Then('a tarefa {string} deve aparecer na lista de tarefas', (title: string) => {
     cy.url().should('include', '/tasks');
     cy.contains(title).should('be.visible');
 });
+
+
+
+
+When('edita o título da tarefa para {string}', (newTitle: string) => {
+    cy.get('input[name="title"]').clear().type(newTitle);  // Altera o título da tarefa
+});
+
+When('envia o formulário de edição', () => {
+    cy.get('form[data-testid="task-form"]').submit();  // Envia o formulário de edição
+});
+
+Then('a tarefa {string} deve aparecer na lista de tarefas', (title: string) => {
+    cy.url().should('include', '/tasks');  // Verifica se a URL inclui "/tasks"
+    cy.contains(title).should('be.visible');  // Verifica se a tarefa aparece na lista com o título editado
+});

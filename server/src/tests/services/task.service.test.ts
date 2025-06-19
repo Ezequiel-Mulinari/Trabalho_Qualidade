@@ -1,5 +1,6 @@
 import { InvalidTaskNameError } from '../../errors/task/InvalidTaskNameError';
 import { TaskNotFoundError } from '../../errors/task/TaskNotFoundError';
+import { AuthService } from '../../services/auth.service';
 import { TaskService } from '../../services/task.service';
 import { prisma } from '../../utils/prisma';
 
@@ -248,4 +249,226 @@ describe('TaskService', () => {
             });
         });
     });
+
+    //## Meu teste Zequi ##
+
+    it('deve criar tarefa com dados opcionais faltando', async () => {
+        // Arrange (preparar)
+        const dadosEntrada = {
+            title: 'Tarefa com dados opcionais', // Título fornecido
+            // description: 'Descrição não fornecida', // Não fornecemos descrição
+            dueDate: null,  // Não fornecemos data de vencimento
+            priority: 'medium', // Prioridade fornecida
+        };
+    
+        const tarefaEsperada = {
+            id: 2,
+            title: dadosEntrada.title,
+            description: undefined,  // Espera-se que a descrição seja indefinida
+            dueDate: null,  // Data de vencimento nula
+            priority: dadosEntrada.priority,
+            userId,
+        };
+    
+        (prisma.task.create as jest.Mock).mockResolvedValue(tarefaEsperada);
+    
+        // Act (agir)
+        const resultado = await TaskService.createTask(userId, dadosEntrada);
+    
+        // Assert (verificar)
+        expect(prisma.task.create).toHaveBeenCalledWith({
+            data: {
+                ...dadosEntrada,
+                description: undefined,  // Não fornecemos descrição
+                dueDate: null,
+                userId,
+            },
+        });
+    
+        expect(resultado).toEqual(tarefaEsperada);
+    });
+    
+    it('deve criar tarefa sem descrição', async () => {
+        // Arrange (preparar)
+        const dadosEntrada = {
+            title: 'Tarefa sem descrição', // Título fornecido
+            // description: undefined, // Não fornecemos descrição
+            dueDate: '2025-06-30',  // Data de vencimento fornecida
+            priority: 'low', // Prioridade fornecida
+        };
+    
+        const tarefaEsperada = {
+            id: 3,
+            title: dadosEntrada.title,
+            description: undefined,  // Espera-se que a descrição seja indefinida
+            dueDate: new Date(dadosEntrada.dueDate), // Data de vencimento fornecida
+            priority: dadosEntrada.priority,
+            userId,
+        };
+    
+        // Mock de criação da tarefa
+        (prisma.task.create as jest.Mock).mockResolvedValue(tarefaEsperada);
+    
+        // Act (agir)
+        const resultado = await TaskService.createTask(userId, dadosEntrada);
+    
+        // Assert (verificar)
+        expect(prisma.task.create).toHaveBeenCalledWith({
+            data: {
+                ...dadosEntrada,
+                description: undefined,  // Não fornecemos descrição
+                dueDate: new Date(dadosEntrada.dueDate),  // Verifica se a data foi configurada corretamente
+                userId,
+            },
+        });
+    
+        expect(resultado).toEqual(tarefaEsperada);
+    });
+    
+    it('deve criar tarefa sem data de vencimento', async () => {
+        // Arrange (preparar)
+        const dadosEntrada = {
+            title: 'Tarefa sem data de vencimento', // Título fornecido
+            description: 'Descrição da tarefa sem data', // Descrição fornecida
+            // dueDate: undefined, // Não fornecemos data de vencimento
+            priority: 'medium', // Prioridade fornecida
+        };
+    
+        const tarefaEsperada = {
+            id: 4,
+            title: dadosEntrada.title,
+            description: dadosEntrada.description,
+            dueDate: null,  // Data de vencimento nula, já que não fornecemos
+            priority: dadosEntrada.priority,
+            userId,
+        };
+    
+        // Mock de criação da tarefa
+        (prisma.task.create as jest.Mock).mockResolvedValue(tarefaEsperada);
+    
+        // Act (agir)
+        const resultado = await TaskService.createTask(userId, dadosEntrada);
+    
+        // Assert (verificar)
+        expect(prisma.task.create).toHaveBeenCalledWith({
+            data: {
+                ...dadosEntrada,
+                dueDate: null,  // Certifica que o campo `dueDate` está nulo
+                userId,
+            },
+        });
+    
+        expect(resultado).toEqual(tarefaEsperada);
+    });
+    
+ 
+    it('deve criar tarefa com todos os campos obrigatórios preenchidos', async () => {
+        // Arrange (preparar)
+        const dadosEntrada = {
+            title: 'Tarefa com todos os dados',  // Título fornecido
+            description: 'Descrição da tarefa completa', // Descrição fornecida
+            dueDate: '2025-07-01',  // Data de vencimento fornecida como string
+            priority: 'high', // Prioridade fornecida
+        };
+    
+        const tarefaEsperada = {
+            id: 5,
+            ...dadosEntrada,
+            dueDate: new Date(dadosEntrada.dueDate),  // Convertendo a data para o tipo Date
+            userId,
+        };
+    
+        // Mock de criação da tarefa
+        (prisma.task.create as jest.Mock).mockResolvedValue(tarefaEsperada);
+    
+        // Act (agir)
+        const resultado = await TaskService.createTask(userId, dadosEntrada);
+    
+        // Assert (verificar)
+        expect(prisma.task.create).toHaveBeenCalledWith({
+            data: {
+                ...dadosEntrada,
+                dueDate: new Date(dadosEntrada.dueDate),  // Verifica se a data foi configurada corretamente
+                userId,
+            },
+        });
+    
+        expect(resultado).toEqual(tarefaEsperada);
+    });
+    
+    it('deve excluir a tarefa corretamente', async () => {
+        // Arrange (preparar)
+        const tarefaParaExcluir = {
+            id: 1,
+            title: 'Tarefa a ser excluída',
+            description: 'Descrição da tarefa que será excluída',
+            priority: 'low',
+            dueDate: null,
+            userId,
+        };
+    
+        // Mock de exclusão da tarefa
+        (prisma.task.delete as jest.Mock).mockResolvedValue(tarefaParaExcluir);
+    
+        // Act (agir)
+        await TaskService.deleteTask(userId, tarefaParaExcluir.id);
+    
+        // Assert (verificar)
+        expect(prisma.task.delete).toHaveBeenCalledWith({
+            where: { id: tarefaParaExcluir.id, userId },
+        });
+    });
+    
+    it('deve retornar tarefas com a prioridade especificada', async () => {
+        // Arrange (preparar)
+        const filtros = { priority: 'high' };
+        const tarefasFiltradas = [
+            { id: 1, title: 'Tarefa 1', userId, completed: true, priority: 'high' },
+            { id: 2, title: 'Tarefa 2', userId, completed: false, priority: 'high' },
+        ];
+    
+        // Simulando a resposta do banco de dados com as tarefas filtradas por prioridade
+        (prisma.task.findMany as jest.Mock).mockResolvedValue(tarefasFiltradas);
+    
+        // Act (agir)
+        const resultado = await TaskService.getTasks(userId, filtros);
+    
+        // Assert (verificar)
+        expect(prisma.task.findMany).toHaveBeenCalledWith({
+            where: { userId, priority: 'high' },  // Verifica se o filtro de prioridade foi aplicado
+            orderBy: { createdAt: 'desc' },
+        });
+    
+        expect(resultado).toEqual(tarefasFiltradas);
+    });
+    it('deve retornar a tarefa correta pelo ID', async () => {
+        // Arrange (preparar)
+        const tarefaId = 1;
+        const tarefaEsperada = {
+            id: tarefaId,
+            title: 'Tarefa 1',
+            userId,
+            completed: true,
+            priority: 'high',
+            description: 'Descrição da Tarefa 1',
+            dueDate: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+    
+        // Simulando a resposta do banco de dados
+        (prisma.task.findUnique as jest.Mock).mockResolvedValue(tarefaEsperada);
+    
+        // Act (agir)
+        const resultado = await TaskService.getTaskById(userId, tarefaId);
+    
+        // Assert (verificar)
+        expect(prisma.task.findUnique).toHaveBeenCalledWith({
+            where: { id: tarefaId, userId },
+        });
+    
+        expect(resultado).toEqual(tarefaEsperada);
+    });
+    
+    
 });
